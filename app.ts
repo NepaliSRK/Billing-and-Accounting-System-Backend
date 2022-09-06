@@ -22,9 +22,6 @@ app.use(express.json());
 
 app.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
-  if (!(email && password)) {
-    res.status(400).send("Input fields cannot be empty")
-  }
   try {
     const user = await client.user.findUniqueOrThrow({
       where: {
@@ -71,9 +68,6 @@ const auth = (req: Request, res: Response, next: NextFunction) => {
 
 app.post("/signup", async (req, res, next) => {
   const { email, password } = req.body;
-  if (!(email && password)) {
-    res.status(400).send("Input fields cannot be empty")
-  }
   try {
     console.log(email, password);
     const salt = await bcrypt.genSalt(10);
@@ -93,4 +87,3 @@ app.post("/signup", async (req, res, next) => {
     return next(error);
   }
 });
-
