@@ -99,10 +99,3 @@ app.post("/signup", async (req, res, next) => {
     return next(error);
   }
 });
-
-// type user = {
-//   id: Number;
-//   username: String;
-//   password: String;
-//   role: String;
-// };

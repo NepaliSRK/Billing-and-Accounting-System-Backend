@@ -17,3 +17,18 @@ model User {
   role      String  @default("User")  
 }
 
+model Product {
+  id String @id @unique @default(cuid())
+  name String @unique
+  price Int 
+  createdAt DateTime @default(now())
+  category  Category @relation(fields: [categoryId],references: [id])
+  categoryId String 
+  }
+
+model Category{
+  id String @id @unique @default(cuid())
+  name String @unique
+  createdAt DateTime @default(now())
+  products Product[]
+  }
