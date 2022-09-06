@@ -32,25 +32,18 @@ app.post("/login", async (req, res, next) => {
     if (!isPasswordMatched) {
       return next(Error("Wrong credentials"))
     }
-    const token = (id: string) => {
-      jwt.sign(
-        { id: String, email },
-        process.env.SECRET_KEY as string,
-        {
-          expiresIn: process.env.JWT_EXPIRE,
-        }
-      );
-    }
 
-    return res
-      .cookie("access_token", token, {
-        httpOnly: true,
-      })
-      .status(200)
-      .json({ message: "Logged in successfully" });
-  } catch {
-    const error = new Error("Something went wrong.");
-    return next(error);
+    let token = jwt.sign(user, process.env.SECRET_KEY as string);
+
+    res.cookie(
+      "access_token",
+      { user: { id: user.id }, token },
+      { httpOnly: true }
+    );
+    console.log(token)
+    return res.status(200).json({ message: "Cookie Set" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error });
   }
 });
 
