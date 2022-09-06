@@ -5,11 +5,13 @@ import { PrismaClient, User } from "@prisma/client";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser"
 import bcrypt from "bcrypt";
+import router from "./route";
 dotenv.config()
 
 
 const app = express();
 const client = new PrismaClient();
+app.use(router);
 
 
 app.use(cookieParser());
