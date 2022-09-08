@@ -28,7 +28,7 @@ export const loginUser = async (
 
     res.cookie("access_token", { token }, { httpOnly: true });
     console.log(token);
-    return res.status(200).json({ message: "Cookie Set" });
+    return res.status(200).json({ user, token });
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ message: error });
@@ -60,3 +60,4 @@ export const signupUser = async (
     return next(error);
   }
 };
+
