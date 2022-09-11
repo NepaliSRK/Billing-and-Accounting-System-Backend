@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import express from "express";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser"
 import bcrypt from "bcrypt";
@@ -32,39 +32,51 @@ app.post("/login", async (req, res, next) => {
     if (!isPasswordMatched) {
       return next(Error("Wrong credentials"))
     }
-    const token = (id: string) => {
-      jwt.sign(
-        { id: String, email },
-        process.env.SECRET_KEY as string,
-        {
-          expiresIn: process.env.JWT_EXPIRE,
-        }
-      );
-    }
 
-    return res
-      .cookie("access_token", token, {
-        httpOnly: true,
-      })
-      .status(200)
-      .json({ message: "Logged in successfully" });
-  } catch {
-    const error = new Error("Something went wrong.");
-    return next(error);
+    let token = jwt.sign(user, process.env.SECRET_KEY as string);
+
+    res.cookie(
+      "access_token",
+      { token },
+      { httpOnly: true }
+    );
+    console.log(token)
+    return res.status(200).json({ message: "Cookie Set" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error });
   }
 });
 
-const auth = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies.access_token;
-  if (!token) {
-    return res.sendStatus(403);
-  }
+const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = jwt.verify(token, process.env.SECRET_KEY as string);
+     const token =  req.body.token || req.headers["access_token"];
+    if (!token) {
+      return res.status(401).send("Login to access data");
+    }
+    const verify = jwt.verify(token, process.env.SECRET_KEY as string);
+    req.body.user = verify;
+    next();
+   } catch {
+     return res.sendStatus(403);
+   }
+ };
+ 
+
+const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+   await auth(req, res, next);
+  try {
+    if (req.body.role != "Admin")
+      return res.status(401).send("Access Denied");
+    next();
   } catch {
     return res.sendStatus(403);
-  }
-};
+   }
+ };
+  
+ app.post("/admin", auth, verifyUser,(req, res) => {
+   res.status(200).send("Welcome");
+ });
+ 
 
 app.post("/signup", async (req, res, next) => {
   const { email, password } = req.body;
@@ -88,3 +100,9 @@ app.post("/signup", async (req, res, next) => {
   }
 });
 
+// type user = {
+//   id: Number;
+//   username: String;
+//   password: String;
+//   role: String;
+// };
